@@ -1,7 +1,7 @@
 import pygame
 import tkinter as tk
 import math
-
+# я на месте, детка
 root = tk.Tk()
 DISPLAY_SIZE = (root.winfo_screenwidth(), root.winfo_screenheight())
 
