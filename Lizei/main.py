@@ -111,7 +111,10 @@ class GameWorld:
     def draw(self, surf):
         Hero = hero_stand
         pl_x, pl_y = self._player.get_position()
-        self.angle = math.atan(-(self.y_mouse - pl_y - 40) / (self.x_mouse - pl_x - 40)) * 180 / math.pi
+        if self.x_mouse - pl_x - 40 != 0:
+            self.angle = math.atan(-(self.y_mouse - pl_y - 40) / (self.x_mouse - pl_x - 40)) * 180 / math.pi
+        else:
+            self.angle = math.atan(-(self.y_mouse - pl_y - 40) / 1) * 180 / math.pi
         if not self.D and not self.A:
             Hero = hero_stand
         else:
