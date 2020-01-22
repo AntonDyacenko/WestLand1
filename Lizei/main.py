@@ -3,6 +3,7 @@ import tkinter as tk
 import math
 import random
 import time
+import copy
 
 running = True
 TIME = time.time()
@@ -32,8 +33,16 @@ hero_go = [pygame.image.load("1.png"), pygame.image.load("2.png"), pygame.image.
            pygame.image.load("8.png"),
            pygame.image.load("9.png"), pygame.image.load("10.png"), pygame.image.load("11.png")]
 
+hero_go_2 = [pygame.image.load("1_1.png"), pygame.image.load("2_1.png"), pygame.image.load("3_1.png"),
+           pygame.image.load("4_1.png"),
+           pygame.image.load("5_1.png"), pygame.image.load("6_1.png"), pygame.image.load("7_1.png"),
+           pygame.image.load("8_1.png"),
+           pygame.image.load("9_1.png"), pygame.image.load("10_1.png"), pygame.image.load("11_1.png")]
+
+hero_go_1 = hero_go_2[::-1]
+
 # Герой идёт задом
-hero_go_2 = [pygame.image.load("11.png"), pygame.image.load("10.png"), pygame.image.load("9.png"),
+hero_go1 = [pygame.image.load("11.png"), pygame.image.load("10.png"), pygame.image.load("9.png"),
              pygame.image.load("8.png"), pygame.image.load("7.png"), pygame.image.load("6.png"),
              pygame.image.load("5.png"),
              pygame.image.load("4.png"), pygame.image.load("3.png"), pygame.image.load("2.png"),
@@ -41,9 +50,12 @@ hero_go_2 = [pygame.image.load("11.png"), pygame.image.load("10.png"), pygame.im
 
 # Герой идёт стоит на месте
 hero_stand = pygame.image.load("hero_stand.png")
+hero_stand_1 = pygame.image.load("hero_stand_1.png")
+
 
 # Рука с бластером
 hand = pygame.image.load("рука.png")
+hand_1 = pygame.image.load('рука_1.png')
 
 bg0 = pygame.image.load("небо карта2.png")
 bg0 = pygame.transform.scale(bg0, (DISPLAY_SIZE[0], int(DISPLAY_SIZE[1] / 1.7)))
@@ -275,30 +287,54 @@ class Character:
                 self._coords = (self._coords[0] + delta_pos[0],
                                 self._coords[1] + delta_pos[1])
 
-    def draw(self):
+    def draw(self, fl):
         if not self.flag:
-            Hero = hero_stand
-            if not self.D and not self.A:
+            if fl:
                 Hero = hero_stand
+                if not self.D and not self.A:
+                    Hero = hero_stand
+                else:
+                    self.Moment += self.clock.tick()
+                    if self.Moment >= 70:
+                        self.i += 1
+                        self.Moment = 0
+                    if self.i > 10:
+                        self.i = 0
+                    if self.D:
+                        Hero = hero_go[self.i]
+                    elif self.A:
+                        Hero = hero_go1[self.i]
+                if DISPLAY_SIZE[0] / 3 >= self.get_position()[0]:
+                    self.surf.blit(Hero, self.get_position())
+                elif self._coords[0] >= 15000 - DISPLAY_SIZE[0] / 3 * 2:
+                    self.surf.blit(Hero, (self.get_position()[0] - 15000 + DISPLAY_SIZE[0], self.get_position()[1]))
+                elif self.get_position()[0] >= 15000 - DISPLAY_SIZE[0] * 2 / 3:
+                    self.surf.blit(Hero, (DISPLAY_SIZE[0] / 3, self.get_position()[1]))
+                else:
+                    self.surf.blit(Hero, (DISPLAY_SIZE[0] / 3, self.get_position()[1]))
             else:
-                self.Moment += self.clock.tick()
-                if self.Moment >= 70:
-                    self.i += 1
-                    self.Moment = 0
-                if self.i > 10:
-                    self.i = 0
-                if self.D:
-                    Hero = hero_go[self.i]
-                elif self.A:
-                    Hero = hero_go_2[self.i]
-            if DISPLAY_SIZE[0] / 3 >= self.get_position()[0]:
-                self.surf.blit(Hero, self.get_position())
-            elif self._coords[0] >= 15000 - DISPLAY_SIZE[0] / 3 * 2:
-                self.surf.blit(Hero, (self.get_position()[0] - 15000 + DISPLAY_SIZE[0], self.get_position()[1]))
-            elif self.get_position()[0] >= 15000 - DISPLAY_SIZE[0] * 2 / 3:
-                self.surf.blit(Hero, (DISPLAY_SIZE[0] / 3, self.get_position()[1]))
-            else:
-                self.surf.blit(Hero, (DISPLAY_SIZE[0] / 3, self.get_position()[1]))
+                Hero = hero_stand_1
+                if not self.D and not self.A:
+                    Hero = hero_stand_1
+                else:
+                    self.Moment += self.clock.tick()
+                    if self.Moment >= 70:
+                        self.i += 1
+                        self.Moment = 0
+                    if self.i > 10:
+                        self.i = 0
+                    if self.D:
+                        Hero = hero_go_1[self.i]
+                    elif self.A:
+                        Hero = hero_go_2[self.i]
+                if DISPLAY_SIZE[0] / 3 >= self.get_position()[0]:
+                    self.surf.blit(Hero, self.get_position())
+                elif self._coords[0] >= 15000 - DISPLAY_SIZE[0] / 3 * 2:
+                    self.surf.blit(Hero, (self.get_position()[0] - 15000 + DISPLAY_SIZE[0], self.get_position()[1]))
+                elif self.get_position()[0] >= 15000 - DISPLAY_SIZE[0] * 2 / 3:
+                    self.surf.blit(Hero, (DISPLAY_SIZE[0] / 3, self.get_position()[1]))
+                else:
+                    self.surf.blit(Hero, (DISPLAY_SIZE[0] / 3, self.get_position()[1]))
         else:
             self.surf.blit(dead_dude, (self.get_Window_coor(), self.get_position()[1] + 100))
             self.die()
@@ -496,7 +532,7 @@ class Weapon:
                     self.ammo -= 1
                     self.number_fire += 1
                     self.fire_coordinate.append(
-                        [character.get_Window_coor() + 40, character.get_position()[1] + 48, self.angle])
+                        [character.get_Window_coor() + 40, character.get_position()[1] + 48, self.angle, self.f])
                 else:
                     no_bullet.play()
 
@@ -538,22 +574,30 @@ class Weapon:
 
     def draw(self, surf):
         i = 0
+        pl_x = character.get_Window_coor()
+        pl_y = character.get_position()[1]
+        self.f = self.x_mouse - pl_x
         while i != self.number_fire:
             if self.fire_coordinate[i][0] <= 1.4 * DISPLAY_SIZE[0]:
-                self.fire_coordinate[i][0] += FIRE_SPEED * dt * math.sin(
-                    (self.fire_coordinate[i][2] + 90) * math.pi / 180)
-                self.fire_coordinate[i][1] += FIRE_SPEED * dt * math.cos(
-                    (self.fire_coordinate[i][2] + 90) * math.pi / 180)
+                if self.fire_coordinate[i][3] < 0:
+                    self.fire_coordinate[i][0] += (FIRE_SPEED * dt * math.sin(
+                        (self.fire_coordinate[i][2] - 90) * math.pi / 180))
+                    self.fire_coordinate[i][1] += (FIRE_SPEED * dt * math.cos(
+                        (self.fire_coordinate[i][2] - 90) * math.pi / 180))
+                else:
+                    self.fire_coordinate[i][0] += (FIRE_SPEED * dt * math.sin(
+                        (self.fire_coordinate[i][2] + 90) * math.pi / 180))
+                    self.fire_coordinate[i][1] += (FIRE_SPEED * dt * math.cos(
+                        (self.fire_coordinate[i][2] + 90) * math.pi / 180))
                 i += 1
             else:
                 self.number_fire -= 1
                 del self.fire_coordinate[i]
-        pl_x = character.get_Window_coor()
-        pl_y = character.get_position()[1]
-        if self.x_mouse - pl_x - 60 != 0:
-            self.angle = math.atan(-(self.y_mouse - pl_y - 50) / (self.x_mouse - pl_x - 60)) * 180 / math.pi
+        if self.x_mouse != pl_x:
+            self.angle = math.atan(-(self.y_mouse - pl_y - 75) / (self.x_mouse - pl_x))
+            self.angle = math.degrees(self.angle)
         else:
-            self.angle = math.atan(-(self.y_mouse - pl_y - 50) / 1) * 180 / math.pi
+            self.angle = 90
         if math.ceil(self.angle) == 90:
             self.angle = 88
         if math.ceil(self.angle) == -89:
@@ -562,7 +606,13 @@ class Weapon:
             for i in range(self.number_fire):  # отрисова пули
                 surf.blit(projectile, (self.fire_coordinate[i][0] + 10, self.fire_coordinate[i][1]))
         if not self.flag:
-            screen.blit(self.rot_center(hand, self.angle), (pl_x - 70, pl_y - 75))
+            if self.f > 0:
+                screen.blit(self.rot_center(hand, self.angle), (pl_x - 70, pl_y - 75))
+            if self.f < 0:
+                screen.blit(self.rot_center(hand_1, self.angle), (pl_x - 46, pl_y - 75))
+
+
+
 
 
 class GameWorld:
@@ -783,7 +833,6 @@ class Menu:
         self.surf.blit(text3, (text_x3, text_y3))
 
     # //////////////////////////////// КЛАССЫ ////////////////////////////////////
-    # //////////////////////////////// КЛАССЫ ////////////////////////////////////
 
 
 class Titers:
@@ -798,11 +847,10 @@ class Titers:
         self.dt = dt
 
     def get_flag(self):
-        if time.time() - TIME <= 28:
+        if time.time() - TIME <= 20:
             self.flag = True
         else:
             self.flag = False
-            print(111111111111111)
         return self.flag
 
     def move(self, dt):
@@ -945,6 +993,12 @@ while running:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         game.set_menue()
+                if event.type == pygame.MOUSEMOTION:
+                    x = event.pos[0]
+                    if x >= character.get_Window_coor():
+                        fl = True
+                    else:
+                        fl = False
                 box1.get_data(event)
                 box2.get_data(event)
                 box3.get_data(event)
@@ -981,7 +1035,7 @@ while running:
             if all(lst):
                 win = True
                 running = False
-            character.draw()
+            character.draw(fl)
             weapon.draw(screen)
             # //////////////////////////////////////////////////////////////////////////////////////
             interface.draw()
