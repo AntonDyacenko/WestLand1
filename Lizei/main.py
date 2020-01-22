@@ -847,7 +847,7 @@ class Titers:
         self.dt = dt
 
     def get_flag(self):
-        if time.time() - TIME <= 20:
+        if time.time() - TIME <= 25:
             self.flag = True
         else:
             self.flag = False
