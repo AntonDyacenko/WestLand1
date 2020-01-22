@@ -1075,6 +1075,7 @@ clock3 = pygame.time.Clock()
 clock5 = pygame.time.Clock()
 titers = Titers(screen)
 flag = False
+# /
 # //////////////////////////////// ОСНОВНОЙ ЦИКЛ ////////////////////////////////////
 i = 1
 win = False
