@@ -1049,7 +1049,7 @@ for i in range(5):
 all_sprites = pygame.sprite.Group()
 clock = pygame.time.Clock()
 running = True
-
+# /
 # //////////////////////////////// РАЗНОЕ ////////////////////////////////////
 pygame.init()
 menu = Menu(screen)
