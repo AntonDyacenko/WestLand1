@@ -26,6 +26,27 @@ titers_im = pygame.transform.scale(titers_im, (DISPLAY_SIZE[0], int(DISPLAY_SIZE
 # Загрузка изображений
 projectile = pygame.image.load("Снаряд.png")  # Снаряд героя
 
+# ///////////////////////ZOMBIE////////////////////////CHECKED
+zombie_go = [pygame.image.load("1_Зомби.png"), pygame.image.load("2_Зомби.png"), pygame.image.load("3_Зомби.png"),
+             pygame.image.load("4_Зомби.png"),
+             pygame.image.load("5_Зомби.png"), pygame.image.load("6_Зомби.png"), pygame.image.load("7_Зомби.png"),
+             pygame.image.load("8_Зомби.png"),
+             pygame.image.load("9_Зомби.png"), pygame.image.load("10_Зомби.png"), pygame.image.load("11_Зомби.png")]
+
+zombie_go_2 = [pygame.image.load("1_Зомби2.png"), pygame.image.load("2_Зомби2.png"), pygame.image.load("3_Зомби2.png"),
+               pygame.image.load("4_Зомби2.png"),
+               pygame.image.load("5_Зомби2.png"), pygame.image.load("6_Зомби2.png"), pygame.image.load("7_Зомби2.png"),
+               pygame.image.load("8_Зомби2.png"),
+               pygame.image.load("9_Зомби2.png"), pygame.image.load("10_Зомби2.png"),
+               pygame.image.load("11_Зомби2.png")]
+
+zombie_stand1 = [pygame.image.load("Зомби_Стоит.png")]
+
+ded_zombie = pygame.image.load("зомби_умер.png")
+zombie_stand = pygame.image.load("Зомби_Стоит.png")
+zombie = pygame.image.load("1.png")
+zombie_die = pygame.image.load("зомби_умер.png")
+# ///////////////////////ZOMBIE////////////////////////
 # Герой идёт вперёд
 hero_go = [pygame.image.load("1.png"), pygame.image.load("2.png"), pygame.image.load("3.png"),
            pygame.image.load("4.png"),
@@ -93,6 +114,11 @@ intr_pp = pygame.image.load("Патроны_интерфейс.jpg")
 pygame.init()
 pygame.mixer.music.load('FON.mp3')
 pygame.font.init()
+z_position = 1500
+rad_attack = 100
+z_v = 0.5
+p = 0
+zflug = False
 if running:
     pygame.mixer.music.play()
 # ///////////////////////////////////////////// ФОНОВЫЙ ЗВУК /////////////////////////////////////////////////
@@ -172,6 +198,102 @@ class Box:
                 self.surf.blit(box_die, self.pos)
             else:
                 self.surf.blit(box_die, self.pos)
+
+
+class Zombie:
+    def __init__(self, surf, xp):
+        self.surf = surf
+        self.xp = xp
+        self.j = 0
+        self.p = 0
+        self.dot = 0
+        self.clock = pygame.time.Clock()
+        self.pos = 0, 0
+        self.die = False
+        self.type = type
+        self.terretory = []
+        self.ammunition = Ammunition(self.surf)
+        self.kit = Kit(self.surf)
+        self.world_pos = 0, 0
+        self.flug = False
+        self.zflug = False
+
+    def get_position(self):
+        return self.pos
+
+    def get_world_position(self):
+        return self.world_pos
+
+    def set_world_position(self, world_pos):
+        self.world_pos = world_pos
+
+    def set_position(self, pos):
+        self.pos = pos
+
+    def get_data(self, event):
+        self.ammunition.get(event)
+        self.kit.get(event)
+
+    def check_dead(self):
+        if self.xp > 0:
+            return False
+        else:
+            return True
+
+    def update(self, player_pos, dt):
+        if not self.die:
+            if abs(player_pos[0] - zombie.get_world_position()[0]) > rad_attack:
+                if zombie.get_world_position()[0] >= player_pos[0]:
+                    dp = (player_pos[0] - zombie.get_world_position()[0]) / abs(
+                        player_pos[0] - zombie.get_world_position()[0]) * z_v * dt
+                    zombie.set_world_position((zombie.get_world_position()[0] + dp, zombie.get_world_position()[1]))
+                    print(dp)
+                    self.flug = False
+                elif zombie.get_world_position()[0] < player_pos[0]:
+                    dp = (player_pos[0] - zombie.get_world_position()[0]) / abs(
+                        player_pos[0] - zombie.get_world_position()[0]) * z_v * dt
+                    zombie.set_world_position((zombie.get_world_position()[0] + dp, zombie.get_world_position()[1]))
+                    self.flug = True
+                self.zflug = False
+            else:
+                character.set_xp(-1)
+                self.zflug = True
+            self.h = character.get_xp()
+            if self.h == 0:  # пытаемся убить героя
+                global screen
+                rect = pygame.Rect(0, 0, root.winfo_screenwidth(), root.winfo_screenheight())
+                pygame.draw.rect(self.surf, (0, 0, 0), rect)  # пытаемся закрасить
+                character.die()   # второй вариант из кода
+
+    def draw(self):
+        j = 0
+        self.dot += self.clock.tick()
+        if self.dot >= 70:
+            self.j += 1
+            self.p += 1
+            self.dot = 0
+        if self.j > 10:
+            self.j = 0
+        if self.p > 10:
+            self.p = 0
+        # self.pos[0] -= 10
+        for i in weapon.get_fire_coor():
+            if self.pos[0] <= i[0] <= self.pos[0] + 100 and self.pos[1] <= i[1] <= self.pos[1] + 100:
+                hit.play()
+                self.die = True
+                weapon.hit(j)
+            j += 1
+
+        if not self.die:
+            if self.zflug == False:
+                if self.flug == False:
+                    self.surf.blit(zombie_go[self.p], self.pos)
+                else:
+                    self.surf.blit(zombie_go_2[self.p], self.pos)
+            else:
+                self.surf.blit(zombie_stand1[0], self.pos)
+        else:
+            self.surf.blit(ded_zombie, (self.pos[0], self.pos[1] + 110))
 
 
 class Kit:
@@ -940,6 +1062,12 @@ box6 = Box(screen, 10, 0)
 box7 = Box(screen, 10, 1)
 box8 = Box(screen, 10, 2)
 box9 = Box(screen, 10, 0)
+# ///////////////////////ZOMBIE////////////////////////CHECKED
+zombie = Zombie(screen, 20)
+character = Character(screen)
+zombie.set_world_position((8000, character.get_position()[1]))
+zombie_die = Zombie(screen, 20)
+# ///////////////////////ZOMBIE////////////////////////
 # //////////////////////////////// ЧАСЫ ////////////////////////////////////
 clock = pygame.time.Clock()
 clock2 = pygame.time.Clock()
@@ -965,14 +1093,24 @@ D = True
 #         titers.set_dt(dt5)
 #         titers.draw()
 #         pygame.display.flip()
+dt = clock.tick()
+dt2 = clock2.tick()
 while running:
     if titers.get_flag():
+        dt = clock.tick()
         dt5 = clock5.tick()
         titers.set_dt(dt5)
         titers.draw()
     elif not game.get_menu():
         if not flag:
+
             # //////////////////////////////// ИГРОВЫЕ ОБЪЕКТЫ ////////////////////////////////////
+            #// // // // // // // // // // // / ZOMBIE // // // // // // // // // // // //
+            print(dt)
+            zombie.update(character.get_position(), dt)
+            zombie.set_position(
+                (character.get_Camera_coor() + zombie.get_world_position()[0], zombie.get_world_position()[1]))
+            #// // // // // // // // // // // / ZOMBIE // // // // // // // // // // // //
             box1.get_coor((character.get_Camera_coor() + 1000, 940))
             box2.get_coor((character.get_Camera_coor() + 2000, 940))
             box3.get_coor((character.get_Camera_coor() + 3000, 940))
@@ -1008,6 +1146,7 @@ while running:
                 box7.get_data(event)
                 box8.get_data(event)
                 box9.get_data(event)
+                zombie.get_data(event)
                 weapon.fire(event)
             game.update(pygame.key.get_pressed(), dt)
             character.update(dt)
@@ -1027,6 +1166,7 @@ while running:
             box7.draw()
             box8.draw()
             box9.draw()
+            zombie.draw()
             for j in range(len(plant_lst)):
                 plant_lst[j].check(character.get_position(), i)
             lst = []
